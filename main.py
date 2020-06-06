@@ -327,16 +327,26 @@ def draw():
     win.blit(manual[8], (260, 360))
     win.blit(manual[9], (260, 375))
     if is_game_over:
+        if score == 0:
+            x = 120
+        elif score < 100:
+            x = 115
+        elif score < 1000:
+            x = 110
+        elif score < 10000:
+            x = 98
+        else:
+            x = 87
         game_over = font.render('Game over!', True, (255, 0, 0))
         your_score = font.render('Your score:', True, (180, 180, 180))
         result = font.render(str(score), True, (255, 255, 255))
         pygame.draw.rect(win, (25, 25, 25), (30, 180, 200, 150))
         win.blit(game_over, (60, 200))
         win.blit(your_score, (53, 243))
-        win.blit(result, (80, 286))
+        win.blit(result, (x, 286))
     elif is_win:
         congrats = [
-            font.render('You win!', True, (0, 255, 0)),
+            font.render('Winning!', True, (0, 255, 0)),
             font.render('Now you are', True, (180, 180, 180)),
             font.render('The Lord of Tetris', True, (255, 255, 255))
         ]
