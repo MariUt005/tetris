@@ -196,112 +196,66 @@ def addNewRow():
 
 
 def rotation():
-    global item, item_id, field, x, y
-    previous_position = item_id
-    if item_id == 0:
-        item_id = 1
-        y += 25
-        if x + 50 < 255 and x - 25 >= 5 and not field[x - 25][y] and not field[x + 25][y] and not field[x + 50][y + 25]:
-            x -= 25
-        elif x + 50 == 255 and not field[x - 50][y] and not field[x - 25][y] and not field[x + 25][y]:
-            x -= 50
-        elif x + 50 == 255 + 25 and not field[x - 75][y] and not field[x - 50][y] and not field[x - 25][y]:
-            x -= 75
-        elif x == 5 and not field[x + 25][y] and not field[x + 50][y] and not field[x + 75][y]:
-            pass
-        else:
-            item_id = 0
-            y -= 25
-    elif item_id == 1:
-        if y + 100 < 505 and not field[x + 25][y - 25] and not field[x + 25][y + 25] and not field[x + 25][y + 50]:
-            item_id = 0
-            x += 25
-            y -= 25
-    elif item_id == 2:
-        if y + 50 < 505 and not field[x + 50][y] and not field[x + 25][y + 50] and not field[x + 50][y + 50]:
-            item_id = 5
-    elif item_id == 3:
-        if x - 25 >= 5:
-            if not field[x - 25][y] and not field[x - 25][y + 25] and not field[x + 25][y + 25]:
-                item_id = 2
-                x -= 25
-        elif x == 5 and not field[x + 25][y + 25] and not field[x + 50][y + 25]:
-            item_id = 2
-    elif item_id == 4:
-        if not field[x + 25][y - 25] and not field[x + 50][y - 25] and not field[x + 25][y + 25]:
-            item_id = 3
-            x += 25
-            y -= 25
-    elif item_id == 5:
-        if x + 50 < 255 and not field[x][y + 25] and not field[x + 50][y + 25] and not field[x + 50][y + 25]:
-            item_id = 4
-            y += 25
-        elif not field[x - 25][y + 25] and not field[x][y + 25]:
-            item_id = 4
-            x -= 25
-            y += 25
-    elif item_id == 6:
-        if not field[x + 25][y - 25] and not field[x + 25][y + 50] and not field[x + 50][y + 50]:
-            item_id = 9
-            x += 25
-            y -= 25
-    elif item_id == 7:
-        if x + 50 < 255 and not field[x + 25][y] and not field[x + 50][y] and not field[x + 50][y + 25]:
-            item_id = 6
-            y += 25
-        elif not field[x - 25][y + 25] and not field[x - 25][y + 50] and not field[x][y + 25]:
-            item_id = 6
-            x -= 25
-            y += 25
-    elif item_id == 8:
-        if y + 50 < 505 and not field[x][y] and not field[x + 25][y] and not field[x][y + 50]:
-            item_id = 7
-    elif item_id == 9:
-        if x >= 5 and not field[x - 25][y + 25] and not field[x + 25][y] and not field[x + 25][y + 25]:
-            item_id = 8
-            x -= 25
-        elif not field[x + 25][y + 25] and not field[x + 50][y] and not field[x + 50][y + 25]:
-            item_id = 8
-    elif item_id == 11:
-        if y + 50 < 505 and not field[x][y] and not field[x + 25][y + 50]:
-            item_id = 12
-    elif item_id == 12:
-        if x + 50 < 250 and not field[x + 25][y] and not field[x + 50][y]:
-            item_id = 11
-        elif not field[x - 25][y + 25] and not field[x + 25][y]:
-            item_id = 11
-            x -= 25
-    elif item_id == 13:
-        if not field[x + 25][y - 25]:
-            item_id = 16
-            x += 25
-            y -= 25
-    elif item_id == 14:
-        if x + 50 < 255 and not field[x + 50][y + 25]:
-            item_id = 13
-        elif not field[x - 25][y + 25] and not field[x][y + 50]:
-            item_id = 13
-            x -= 25
-    elif item_id == 15:
-        if y + 50 < 505 and not field[x + 25][y + 50]:
-            item_id = 14
-            y += 25
-    elif item_id == 16:
-        if x > 5 and not field[x - 25][y + 25]:
-            item_id = 15
-            x -= 25
-        elif not field[x + 25][y] and not field[x + 50][y + 25]:
-            item_id = 15
-    elif item_id == 17:
-        if y + 50 < 505 and not field[x][y + 25] and not field[x][y + 50]:
-            item_id = 18
-    elif item_id == 18:
-        if x + 50 < 255 and not field[x][y] and not field[x + 50][y + 25]:
-            item_id = 17
-        elif not field[x - 25][y] and not field[x][y]:
-            item_id = 17
-            x -= 25
-    if previous_position == item_id:
+    global item, item_id, x, y
+
+    def isRotationPossible(item_id, x, y):
+        global field
+        cells_to_check = [
+            [field[x - 25][y + 50], field[x + 25][y + 50], field[x + 50][y + 50]],
+            [field[x + 25][y - 50], field[x + 25][y - 25], field[x + 50][y + 25]],
+            [field[x + 50][y], field[x + 50][y - 25]],
+            [field[x + 25][y + 50], field[x + 50][y + 50]],
+            [field[x][y + 25], field[x][y + 50]],
+            [field[x][y], field[x - 25][y]],
+            [field[x][y + 50], field[x + 25][y + 50]],
+            [field[x - 25][y], field[x - 25][y + 25]],
+            [field[x + 25][y], field[x + 50][y]],
+            [field[x + 50][y + 25], field[x + 50][y + 50]],
+            [None],
+            [field[x][y], field[x + 25][y + 50]],
+            [field[x + 25][y], field[x + 50][y]],
+            [field[x + 25][y - 25]],
+            [field[x + 50][y + 25]],
+            [field[x + 25][y + 50]],
+            [field[x - 25][y + 25]],
+            [field[x + 50][y], field[x + 25][y + 50]],
+            [field[x - 25][y], field[x][y]]
+        ]
+        for cell in cells_to_check[item_id]:
+            if cell:
+                return False
+        return True
+
+    copy_x, copy_y = x, y
+
+    new_item_id = [1, 0, 5, 2, 3, 4, 9, 6, 7, 8, 10, 12, 11, 16, 13, 14, 15, 18, 17]
+    coord_diff = [
+        [-25, 50], [25, -50],
+        [25, -25], [0, 25], [0, 0], [-25, 0],
+        [0, 0], [-25, 0], [25, -25], [0, 25],
+        [0, 0],
+        [0, 0], [0, 0],
+        [25, -25], [0, 25], [0, 0], [-25, 0],
+        [25, 0], [-25, 0]
+    ]
+    min_possible_x = [30, 5, 5, 5, 5, 30, 5, 30, 5, 5, 5, 5, 5, 5, 5, 30, 30, 5, 30]
+    max_possible_x = [180, 155, 180, 180, 180, 205, 180, 205, 180, 180, 205, 180, 180, 180, 180, 180, 205, 180, 205]
+    max_possible_y = [405, 455, 455, 430, 430, 430, 430, 430, 455, 430, 455, 430, 430, 455, 430, 430, 430, 430, 430]
+
+    if copy_y > max_possible_y[item_id]:
+        return None
+    elif copy_x < min_possible_x[item_id]:
+        copy_x += 25
+    elif copy_x - 25 == max_possible_x[item_id]:
+        copy_x -= 25
+    elif copy_x - 50 == max_possible_x[item_id]:
+        copy_x -= 50
+
+    if isRotationPossible(item_id, copy_x, copy_y):
+        copy_x += coord_diff[item_id][0]
+        copy_y += coord_diff[item_id][1]
+        x, y = copy_x, copy_y
+        item_id = new_item_id[item_id]
         item = pygame.transform.rotate(item, 90)
 
 
@@ -404,8 +358,8 @@ win = pygame.display.set_mode((365, 510))
 pygame.display.set_caption("Tetris by MariUt005")
 
 field = {}
-i = 5
-while i <= 230:
+i = -20
+while i <= 255:
     j = -95
     field[i] = {}
     while j <= 480:
