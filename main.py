@@ -5,50 +5,33 @@ pygame.font.init()
 
 
 def genItem():
+    global items
+    item_ids = {
+        '0_0': 0, '0_180': 0, '0_90': 1, '0_270': 1,
+        '1_0': 2, '1_90': 5, '1_180': 4, '1_270': 3,
+        '2_0': 6, '2_90': 9, '2_180': 8, '2_270': 7,
+        '3_0': 10, '3_90': 10, '3_180': 10, '3_270': 10,
+        '4_0': 11, '4_180': 11, '4_90': 12, '4_270': 12,
+        '5_0': 13, '5_90': 16, '5_180': 15, '5_270': 14,
+        '6_0': 17, '6_180': 17, '6_90': 18, '6_270': 18
+    }
+    start_coord = {
+        0: [130, -95], 1: [80, -20],
+        2: [105, -45], 3: [105, -70], 4: [105, -45], 5: [105, -70],
+        6: [105, -45], 7: [105, -70], 8: [105, -45], 9: [105, -70],
+        10: [105, -45],
+        11: [105, -45], 12: [105, -70], 13: [105, -45], 14: [105, -70],
+        15: [105, -45], 16: [105, -70],
+        17: [105, -45], 18: [105, -70]
+    }
+
     item_index = random.randint(0, 6)
     item = items[item_index]
     item_rotation = random.choice([0, 90, 180, 270])
     item = pygame.transform.rotate(item, item_rotation)
-    if item_index == 0 and item_rotation in [0, 180]:
-        item_id = 0
-        x = 130
-        y = -95
-    elif item_index == 0 and item_rotation in [90, 270]:
-        item_id = 1
-        x = 80
-        y = -20
-    elif item_index in [1, 2, 4, 5, 6] and item_rotation in [0, 180]:
-        x = 105
-        y = -45
-        if item_index == 1:
-            item_id = 2 if item_rotation == 0 else 4
-        elif item_index == 2:
-            item_id = 6 if item_rotation == 0 else 8
-        elif item_index == 4:
-            item_id = 11
-        elif item_index == 5:
-            item_id = 13 if item_rotation == 0 else 15
-        elif item_index == 6:
-            item_id = 17
-    elif item_index in [1, 2, 4, 5, 6] and item_rotation in [90, 270]:
-        x = 105
-        y = -70
-        if item_index == 1:
-            item_id = 3 if item_rotation == 90 else 5
-        elif item_index == 2:
-            item_id = 7 if item_rotation == 270 else 9
-        elif item_index == 4:
-            item_id = 12
-        elif item_index == 5:
-            item_id = 14 if item_rotation == 270 else 16
-        elif item_index == 6:
-            item_id = 18
-    elif item_index == 3:
-        x = 105
-        y = -45
-        item_id = 10
+    item_id = item_ids[str(item_index) + '_' + str(item_rotation)]
 
-    return item, item_id, x, y
+    return item, item_id, start_coord[item_id][0], start_coord[item_id][1]
 
 
 def checkLeftSide():
@@ -121,7 +104,6 @@ def checkDownSide():
 
 def updateField(value):
     global item_id, field, x, y
-
     if item_id == 0:
         field[x][y] = field[x][y + 25] = field[x][y + 50] = field[x][y + 75] = value
     elif item_id == 1:
@@ -162,6 +144,15 @@ def updateField(value):
         field[x + 25][y] = field[x + 25][y + 25] = field[x][y + 25] = field[x][y + 50] = value
 
 
+def isLoss():
+    i = 5
+    while i < 255:
+        if field[i][-20]:
+            return True
+        i += 25
+    return False
+
+
 def checkRows():
     global field, score
     y = 5
@@ -181,10 +172,27 @@ def deleteRow(y):
     global field
     while y > 0:
         x = 5
-        while x <= 230:
+        while x < 255:
             field[x][y] = field[x][y - 25]
             x += 25
         y -= 25
+
+
+def addNewRow():
+    global field
+    y = -20
+    while y < 505 - 25:
+        x = 5
+        while x < 255:
+            field[x][y] = field[x][y+25]
+            x += 25
+        y += 25
+
+    x = 5
+    y = 480
+    while x < 255:
+        field[x][y] = random.choice([0, 1])
+        x += 25
 
 
 def rotation():
@@ -192,55 +200,68 @@ def rotation():
     previous_position = item_id
     if item_id == 0:
         item_id = 1
-        if x + 100 <= 255 and not field[x + 25][y] and not field[x + 50][y] and not field[x + 75][y]:
-            pass
-        elif x + 100 == 255 + 25 and not field[x - 25][y] and not field[x + 25][y] and not field[x + 50][y]:
+        y += 25
+        if x + 50 < 255 and x - 25 >= 5 and not field[x - 25][y] and not field[x + 25][y] and not field[x + 50][y + 25]:
             x -= 25
-        elif x + 100 == 255 + 50 and not field[x - 50][y] and not field[x - 25][y] and not field[x + 25][y]:
+        elif x + 50 == 255 and not field[x - 50][y] and not field[x - 25][y] and not field[x + 25][y]:
             x -= 50
-        elif x + 100 == 255 + 75 and not field[x - 75][y] and not field[x - 50][y] and not field[x - 25][y]:
+        elif x + 50 == 255 + 25 and not field[x - 75][y] and not field[x - 50][y] and not field[x - 25][y]:
             x -= 75
+        elif x == 5 and not field[x + 25][y] and not field[x + 50][y] and not field[x + 75][y]:
+            pass
         else:
             item_id = 0
+            y -= 25
     elif item_id == 1:
-        if y + 100 < 505 and not field[x][y + 25] and not field[x][y + 50] and not field[x][y + 75]:
+        if y + 100 < 505 and not field[x + 25][y - 25] and not field[x + 25][y + 25] and not field[x + 25][y + 50]:
             item_id = 0
+            x += 25
+            y -= 25
     elif item_id == 2:
-        if y + 50 < 505 and not field[x + 25][y] and not field[x][y + 50]:
-            item_id = 3
-    elif item_id == 3:
-        if x + 50 < 255 and not field[x + 50][y] and not field[x + 50][y + 25]:
-            item_id = 4
-        elif not field[x - 25][y] and not field[x + 25][y + 25]:
-            item_id = 4
-            x -= 25
-    elif item_id == 4:
-        if y + 50 < 505 and not field[x + 25][y + 25] and not field[x + 25][y + 50] and not field[x][y + 50]:
+        if y + 50 < 505 and not field[x + 50][y] and not field[x + 25][y + 50] and not field[x + 50][y + 50]:
             item_id = 5
+    elif item_id == 3:
+        if x - 25 >= 5:
+            if not field[x - 25][y] and not field[x - 25][y + 25] and not field[x + 25][y + 25]:
+                item_id = 2
+                x -= 25
+        elif x == 5 and not field[x + 25][y + 25] and not field[x + 50][y + 25]:
+            item_id = 2
+    elif item_id == 4:
+        if not field[x + 25][y - 25] and not field[x + 50][y - 25] and not field[x + 25][y + 25]:
+            item_id = 3
+            x += 25
+            y -= 25
     elif item_id == 5:
-        if x + 50 < 255 and not field[x][y] and not field[x][y + 25] and not field[x + 50][y + 25]:
-            item_id = 2
-        elif not field[x - 25][y] and not field[x - 25][y + 25] and not field[x][y + 25]:
-            item_id = 2
-            x -= 25
-    elif item_id == 6:
-        if y + 50 < 505 and not field[x + 25][y + 25] and not field[x + 25][y + 50]:
-            item_id = 7
-    elif item_id == 7:
-        if x + 50 < 255 and not field[x][y + 25] and not field[x + 50][y] and not field[x + 50][y + 25]:
-            item_id = 8
+        if x + 50 < 255 and not field[x][y + 25] and not field[x + 50][y + 25] and not field[x + 50][y + 25]:
+            item_id = 4
+            y += 25
         elif not field[x - 25][y + 25] and not field[x][y + 25]:
+            item_id = 4
+            x -= 25
+            y += 25
+    elif item_id == 6:
+        if not field[x + 25][y - 25] and not field[x + 25][y + 50] and not field[x + 50][y + 50]:
+            item_id = 9
+            x += 25
+            y -= 25
+    elif item_id == 7:
+        if x + 50 < 255 and not field[x + 25][y] and not field[x + 50][y] and not field[x + 50][y + 25]:
+            item_id = 6
+            y += 25
+        elif not field[x - 25][y + 25] and not field[x - 25][y + 50] and not field[x][y + 25]:
+            item_id = 6
+            x -= 25
+            y += 25
+    elif item_id == 8:
+        if y + 50 < 505 and not field[x][y] and not field[x + 25][y] and not field[x][y + 50]:
+            item_id = 7
+    elif item_id == 9:
+        if x >= 5 and not field[x - 25][y + 25] and not field[x + 25][y] and not field[x + 25][y + 25]:
             item_id = 8
             x -= 25
-    elif item_id == 8:
-        if y + 50 < 505 and not field[x][y] and not field[x][y + 50] and not field[x + 25][y + 50]:
-            item_id = 9
-    elif item_id == 9:
-        if x + 50 < 255 and not field[x + 25][y] and not field[x + 50][y]:
-            item_id = 6
-        elif not field[x - 25][y] and not field[x - 25][y + 25] and not field[x + 25][y]:
-            item_id = 6
-            x -= 25
+        elif not field[x + 25][y + 25] and not field[x + 50][y] and not field[x + 50][y + 25]:
+            item_id = 8
     elif item_id == 11:
         if y + 50 < 505 and not field[x][y] and not field[x + 25][y + 50]:
             item_id = 12
@@ -251,23 +272,26 @@ def rotation():
             item_id = 11
             x -= 25
     elif item_id == 13:
-        if y + 50 < 505 and not field[x][y + 25] and not field[x + 25][y + 50]:
-            item_id = 14
+        if not field[x + 25][y - 25]:
+            item_id = 16
+            x += 25
+            y -= 25
     elif item_id == 14:
         if x + 50 < 255 and not field[x + 50][y + 25]:
-            item_id = 15
-        elif not field[x - 25][y + 25] and not field[x][y]:
-            item_id = 15
+            item_id = 13
+        elif not field[x - 25][y + 25] and not field[x][y + 50]:
+            item_id = 13
             x -= 25
     elif item_id == 15:
-        if y + 50 < 505 and not field[x][y] and not field[x][y + 50]:
-            item_id = 16
+        if y + 50 < 505 and not field[x + 25][y + 50]:
+            item_id = 14
+            y += 25
     elif item_id == 16:
-        if x + 50 < 255 and not field[x + 25][y] and not field[x + 50][y]:
-            item_id = 13
-        elif not field[x - 25][y] and not field[x + 25][y]:
-            item_id = 13
+        if x > 5 and not field[x - 25][y + 25]:
+            item_id = 15
             x -= 25
+        elif not field[x + 25][y] and not field[x + 50][y + 25]:
+            item_id = 15
     elif item_id == 17:
         if y + 50 < 505 and not field[x][y + 25] and not field[x][y + 50]:
             item_id = 18
@@ -279,6 +303,15 @@ def rotation():
             x -= 25
     if previous_position == item_id:
         item = pygame.transform.rotate(item, 90)
+
+
+def fallDown():
+    global item_id, field, x, y
+    while True:
+        if checkDownSide():
+            y += 25
+        else:
+            break
 
 
 def draw():
@@ -307,14 +340,16 @@ def draw():
     manual = [
         lover_font.render('->ESC', True, (255, 255, 255)),
         lover_font.render(' to pause', True, (180, 180, 180)),
-        lover_font.render('->a or left', True, (255, 255, 255)),
+        lover_font.render('->a, left', True, (255, 255, 255)),
         lover_font.render(' to move left', True, (180, 180, 180)),
-        lover_font.render('->d or right', True, (255, 255, 255)),
+        lover_font.render('->d, right', True, (255, 255, 255)),
         lover_font.render(' to move right', True, (180, 180, 180)),
-        lover_font.render('->s or down', True, (255, 255, 255)),
+        lover_font.render('->s, down', True, (255, 255, 255)),
         lover_font.render(' to move down', True, (180, 180, 180)),
-        lover_font.render('->SPACE', True, (255, 255, 255)),
-        lover_font.render(' to rotate', True, (180, 180, 180))
+        lover_font.render('->w, UP, SPACE', True, (255, 255, 255)),
+        lover_font.render(' to rotate', True, (180, 180, 180)),
+        lover_font.render('->ENTER', True, (255, 255, 255)),
+        lover_font.render(' to fall down', True, (180, 180, 180)),
     ]
     win.blit(manual[0], (260, 200))
     win.blit(manual[1], (260, 215))
@@ -326,6 +361,8 @@ def draw():
     win.blit(manual[7], (260, 335))
     win.blit(manual[8], (260, 360))
     win.blit(manual[9], (260, 375))
+    win.blit(manual[10], (260, 400))
+    win.blit(manual[11], (260, 415))
     if is_game_over:
         if score == 0:
             x = 120
@@ -388,13 +425,14 @@ items = [
 square = pygame.image.load('img/square.png')
 
 item, item_id, x, y = genItem()
-item_exist = True
+is_item_exist = True
 
 next_item, next_item_id, next_item_x, next_item_y = genItem()
 is_items_merged = False
 is_visible = False
 
 count_to_lowering = 0
+count_to_adding_new_row = 0
 
 score = 0
 is_game_over = False
@@ -420,22 +458,12 @@ while is_running:
 
     keys = pygame.key.get_pressed()
     if not is_game_stop:
-        if item_exist:
+        if is_item_exist:
             updateField(0)
 
             if is_items_merged and is_visible:
                 next_item, next_item_id, next_item_x, next_item_y = genItem()
                 is_items_merged = False
-
-            if count_to_lowering >= 10:
-                if checkDownSide():
-                    y += 25
-                    is_visible = True
-                else:
-                    item_exist = False
-                count_to_lowering = 0
-            else:
-                count_to_lowering += level % 10 + 1
 
             if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and checkLeftSide():
                 x -= 25
@@ -444,18 +472,34 @@ while is_running:
             if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and checkDownSide():
                 y += 25
                 is_visible = True
-            if keys[pygame.K_SPACE]:
+            if keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]:
                 rotation()
+            if keys[pygame.K_RETURN]:
+                fallDown()
+                is_item_exist = False
+
+            if count_to_lowering >= 10:
+                if checkDownSide():
+                    y += 25
+                    is_visible = True
+                else:
+                    is_item_exist = False
+                count_to_lowering = 0
+            else:
+                count_to_lowering += level % 10 + 1
+
+            if count_to_adding_new_row >= 5000:
+                for i in range(0, level // 2):
+                    addNewRow()
+                count_to_adding_new_row = 0
+            else:
+                count_to_adding_new_row += level
         else:
-            i = 5
-            while i < 255:
-                if field[i][-20]:
-                    is_game_over = True
-                i += 25
+            is_game_over = True if isLoss() else False
             item, item_id, x, y = next_item, next_item_id, next_item_x, next_item_y
             is_items_merged = True
             is_visible = False
-            item_exist = True
+            is_item_exist = True
             count_to_lowering = 10
 
         checkRows()
