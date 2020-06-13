@@ -305,18 +305,13 @@ def draw():
         lover_font.render('->ENTER', True, (255, 255, 255)),
         lover_font.render(' to fall down', True, (180, 180, 180)),
     ]
-    win.blit(manual[0], (260, 200))
-    win.blit(manual[1], (260, 215))
-    win.blit(manual[2], (260, 240))
-    win.blit(manual[3], (260, 255))
-    win.blit(manual[4], (260, 280))
-    win.blit(manual[5], (260, 295))
-    win.blit(manual[6], (260, 320))
-    win.blit(manual[7], (260, 335))
-    win.blit(manual[8], (260, 360))
-    win.blit(manual[9], (260, 375))
-    win.blit(manual[10], (260, 400))
-    win.blit(manual[11], (260, 415))
+    i, j = 200, 0
+    while i <= 400:
+        win.blit(manual[j], (260, i))
+        win.blit(manual[j + 1], (260, i + 15))
+        i += 40
+        j += 2
+
     if is_game_over:
         if score == 0:
             x = 120
@@ -360,7 +355,7 @@ pygame.display.set_caption("Tetris by MariUt005")
 field = {}
 i = -20
 while i <= 255:
-    j = -95
+    j = -120
     field[i] = {}
     while j <= 480:
         field[i][j] = 0
@@ -388,6 +383,9 @@ is_visible = False
 count_to_lowering = 0
 count_to_adding_new_row = 0
 
+previous_move = None
+count_previous_move = 0
+
 score = 0
 is_game_over = False
 is_win = False
@@ -395,7 +393,7 @@ is_win = False
 is_game_stop = True
 is_running = True
 while is_running:
-    pygame.time.delay(90)
+    pygame.time.delay(60)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -419,18 +417,34 @@ while is_running:
                 next_item, next_item_id, next_item_x, next_item_y = genItem()
                 is_items_merged = False
 
-            if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and checkLeftSide():
+            if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and checkLeftSide() and previous_move != 'left':
                 x -= 25
-            if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and checkRightSide():
+                previous_move = 'left'
+                count_previous_move = 0
+            if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and checkRightSide() and previous_move != 'right':
                 x += 25
-            if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and checkDownSide():
+                previous_move = 'right'
+                count_previous_move = 0
+            if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and checkDownSide() and previous_move != 'down':
                 y += 25
                 is_visible = True
-            if keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]:
+                previous_move = 'down'
+                count_previous_move = 0
+            if (keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]) and previous_move != 'rotation':
                 rotation()
-            if keys[pygame.K_RETURN]:
+                previous_move = 'rotation'
+                count_previous_move = 0
+            if keys[pygame.K_RETURN] and previous_move != 'fall down':
                 fallDown()
                 is_item_exist = False
+                previous_move = 'fall down'
+                count_previous_move = 0
+
+            if count_previous_move == 1:
+                previous_move = None
+                count_previous_move = 0
+            else:
+                count_previous_move += 1
 
             if count_to_lowering >= 10:
                 if checkDownSide():
