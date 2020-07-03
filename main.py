@@ -393,7 +393,7 @@ is_win = False
 is_game_stop = True
 is_running = True
 while is_running:
-    pygame.time.delay(60)
+    pygame.time.delay(20)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -417,36 +417,36 @@ while is_running:
                 next_item, next_item_id, next_item_x, next_item_y = genItem()
                 is_items_merged = False
 
-            if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and checkLeftSide() and previous_move != 'left':
+            if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and checkLeftSide() and is_move_possible:
                 x -= 25
-                previous_move = 'left'
+                is_move_possible = False
                 count_previous_move = 0
-            if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and checkRightSide() and previous_move != 'right':
+            if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and checkRightSide() and is_move_possible:
                 x += 25
-                previous_move = 'right'
+                is_move_possible = False
                 count_previous_move = 0
-            if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and checkDownSide() and previous_move != 'down':
+            if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and checkDownSide() and is_move_possible:
                 y += 25
                 is_visible = True
-                previous_move = 'down'
+                is_move_possible = False
                 count_previous_move = 0
-            if (keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]) and previous_move != 'rotation':
+            if (keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]) and is_move_possible:
                 rotation()
-                previous_move = 'rotation'
+                is_move_possible = False
                 count_previous_move = 0
-            if keys[pygame.K_RETURN] and previous_move != 'fall down':
+            if keys[pygame.K_RETURN] and is_move_possible:
                 fallDown()
                 is_item_exist = False
-                previous_move = 'fall down'
+                is_move_possible = False
                 count_previous_move = 0
 
-            if count_previous_move == 1:
-                previous_move = None
+            if count_previous_move == 5:
+                is_move_possible = True
                 count_previous_move = 0
             else:
                 count_previous_move += 1
 
-            if count_to_lowering >= 10:
+            if count_to_lowering >= 65:
                 if checkDownSide():
                     y += 25
                     is_visible = True
@@ -454,10 +454,10 @@ while is_running:
                     is_item_exist = False
                 count_to_lowering = 0
             else:
-                count_to_lowering += level % 10 + 1
+                count_to_lowering += level % 10 // 2 + 1
 
             if count_to_adding_new_row >= 5000:
-                for i in range(0, level // 2):
+                for i in range(0, level // 3):
                     addNewRow()
                 count_to_adding_new_row = 0
             else:
